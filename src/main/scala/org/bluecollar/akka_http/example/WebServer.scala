@@ -22,7 +22,6 @@ object WebServer extends App {
     }
   }
 
-
   Http().bindAndHandle(handler = routes, interface = "localhost", port = 8080)
 
 
