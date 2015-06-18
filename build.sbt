@@ -6,7 +6,7 @@ scalaVersion := "2.11.5"
 
 scalacOptions ++= Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
-javacOptions ++= Seq("-Xlint:deprecation", "-encoding", "utf8")
+javacOptions ++= Seq("-Xlint:deprecation", "-encoding", "utf8","-XX:MaxPermSize=256m")
 
 libraryDependencies ++= {
   val akkaGroup = "com.typesafe.akka"
