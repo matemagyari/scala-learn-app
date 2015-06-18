@@ -27,4 +27,4 @@ libraryDependencies ++= {
 
 mainClass in (Compile, run) := Some("org.bluecollar.akka_http.example.WebServer")
 
-jarName in assembly := "scala-learn-app.jar"
+assemblyJarName in assembly := "scala-learn-app.jar"
