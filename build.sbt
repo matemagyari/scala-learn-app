@@ -20,9 +20,12 @@ libraryDependencies ++= {
     //akkaGroup %% "akka-http-experimental" % akkaStreamVersion,
     akkaGroup %% "akka-http-scala-experimental" % akkaStreamVersion,
     akkaGroup %% "akka-http-spray-json-experimental" % akkaStreamVersion,
+
     akkaGroup %% "akka-http-testkit-scala-experimental" % akkaStreamVersion % "test",
     "org.scalatest" %% "scalatest" % scalaTestVersion % "test"
   )
 }
 
 mainClass in (Compile, run) := Some("org.bluecollar.akka_http.example.WebServer")
+
+jarName in assembly := "scala-learn-app.jar"
