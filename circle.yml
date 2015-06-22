@@ -2,6 +2,10 @@ machine:
   environment:
       SBT_OPTS: "-XX:+CMSClassUnloadingEnabled -XX:PermSize=256M -XX:MaxPermSize=512M"
 
+general:
+  artifacts:
+    - "appspec.yml"
+
 deployment:
   staging:
     branch: master
@@ -15,3 +19,4 @@ deployment:
             bucket: mate-s3-bucket
             key_pattern: scala-learn-app-{BRANCH}-{SHORT_COMMIT}
         deployment_group: scala-deployment-group
+        deployment_config: CodeDeployDefault.AllAtOnce
