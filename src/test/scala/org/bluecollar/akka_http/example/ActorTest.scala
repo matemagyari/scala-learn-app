@@ -12,7 +12,6 @@ import scala.concurrent.{Await, Future}
 
 class ActorTest extends FunSuite {
 
-
   test("actor") {
 
   }
