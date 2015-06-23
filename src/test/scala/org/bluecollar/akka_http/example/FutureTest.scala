@@ -80,7 +80,6 @@ class FutureTest extends FunSuite {
     }
   }
 
-
   test("future andThen-s") {
 
     val f: Future[Int] = Future {
