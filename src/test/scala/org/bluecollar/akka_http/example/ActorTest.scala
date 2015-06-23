@@ -5,6 +5,5 @@ import org.scalatest._
 class ActorTest extends FunSuite {
 
   test("actor") {
-
   }
 }
