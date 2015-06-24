@@ -1,4 +1,10 @@
 version: 1.0
 os: linux
 files:
-  - source: scala-learn-app.jar
+  - source: target/scala-2.11/scala-learn-app.jar
+  - destination: /opt/packages/
+hooks:
+  AfterInstall:
+    - location: aws_scripts/start_up
+      timeout: 300
+      runas: root
