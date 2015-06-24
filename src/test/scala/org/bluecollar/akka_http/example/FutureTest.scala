@@ -15,7 +15,7 @@ class FutureTest extends FunSuite {
 
     val f: Future[Int] = Future { 1 }
 
-    assert(Await.result(f, 100 milliseconds) == 1)
+    assert(resultArrived(f) == 1)
   }
 
   test("futures are monads (or something)") {
@@ -23,7 +23,7 @@ class FutureTest extends FunSuite {
     val f: Future[Int] = Future { 1 }
     val f2 = f.map(_ * 2)
 
-    assert(Await.result(f2, 100 milliseconds) == 2)
+    assert(resultArrived(f2) == 2)
   }
 
 
@@ -37,7 +37,7 @@ class FutureTest extends FunSuite {
       x2 <- f2
     } yield x1 + x2
 
-    assert(Await.result(f3, 100 milliseconds) == 3)
+    assert(resultArrived(f3) == 3)
   }
 
 
@@ -47,7 +47,7 @@ class FutureTest extends FunSuite {
 
     val f: Future[IndexedSeq[Int]] = Future.sequence(fs)
 
-    assert(Await.result(f, 100 milliseconds) == IndexedSeq(1, 2, 3))
+    assert(Await.result(f, 1 seconds) == IndexedSeq(1, 2, 3))
   }
 
   test("future firstCompletedOf") {
@@ -61,7 +61,7 @@ class FutureTest extends FunSuite {
 
     val f = Future.firstCompletedOf(List(f1, f2))
 
-    assert(Await.result(f, 100 milliseconds) == 2)
+    assert(resultArrived(f) == 2)
   }
 
   test("future callbacks") {
@@ -89,7 +89,7 @@ class FutureTest extends FunSuite {
       case Failure(t) => throw new Exception
     }
 
-    assert(Await.result(f, 100 milliseconds) == 1)
+    assert(resultArrived(f) == 1)
   }
 
 
@@ -102,7 +102,7 @@ class FutureTest extends FunSuite {
       case Failure(t) => println(s"Failure ${t}"); 0
     }
 
-    val r = Try { assert(Await.result(f, 100 milliseconds) == 1) }
+    val r = Try { assert(resultArrived(f) == 1) }
 
     assert(r.isFailure)
   }
@@ -112,7 +112,7 @@ class FutureTest extends FunSuite {
 
     val f = Future { 1 / 0 } fallbackTo Future { 2 }
 
-    assert(Await.result(f, 100 milliseconds) == 2)
+    assert(resultArrived(f) == 2)
   }
 
 
@@ -122,7 +122,7 @@ class FutureTest extends FunSuite {
       case e:ArithmeticException => 2
     }
 
-    assert(Await.result(f, 100 milliseconds) == 2)
+    assert(resultArrived(f) == 2)
   }
 
   test("recoverWith") {
@@ -131,7 +131,9 @@ class FutureTest extends FunSuite {
       case e:ArithmeticException => Future { 2 }
     }
 
-    assert(Await.result(f, 100 milliseconds) == 2)
+    assert(resultArrived(f) == 2)
   }
 
+
+  def resultArrived(f: Future[Int]) = Await.result(f, 1 seconds)
 }

@@ -6,6 +6,10 @@ general:
   artifacts:
     - "appspec.yml"
 
+dependencies:
+  override:
+    - sbt assembly
+
 deployment:
   staging:
     branch: master
