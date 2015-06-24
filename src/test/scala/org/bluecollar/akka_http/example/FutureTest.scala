@@ -134,6 +134,5 @@ class FutureTest extends FunSuite {
     assert(resultArrived(f) == 2)
   }
 
-
   def resultArrived(f: Future[Int]) = Await.result(f, 1 seconds)
 }
