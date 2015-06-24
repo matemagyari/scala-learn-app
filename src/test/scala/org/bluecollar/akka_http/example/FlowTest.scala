@@ -30,6 +30,7 @@ class FlowTest extends FunSuite {
     Source(Future.successful("Hello Streams!"))
   }
 
+  
   test("sinks") {
 
     Sink.ignore
