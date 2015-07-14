@@ -11,7 +11,7 @@ javacOptions ++= Seq("-Xlint:deprecation", "-encoding", "utf8","-XX:MaxPermSize=
 libraryDependencies ++= {
   val akkaGroup = "com.typesafe.akka"
   val akkaVersion = "2.3.10"
-  val akkaStreamVersion = "1.0-RC2"
+  val akkaStreamVersion = "1.0-RC4"
   val scalaTestVersion = "2.2.4"
   Seq(
     akkaGroup %% "akka-actor" % akkaVersion,

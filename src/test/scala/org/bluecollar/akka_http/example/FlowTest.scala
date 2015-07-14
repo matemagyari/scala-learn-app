@@ -30,7 +30,7 @@ class FlowTest extends FunSuite {
     Source(Future.successful("Hello Streams!"))
   }
 
-  
+
   test("sinks") {
 
     Sink.ignore
@@ -98,7 +98,7 @@ class FlowTest extends FunSuite {
 
   }
 
-  test("simple graph") {
+  test("simple graph with 1 source and 1 sink") {
 
     val sumSink = Sink.fold[Int, Int](0)(_ + _)
 
@@ -118,23 +118,105 @@ class FlowTest extends FunSuite {
     assert(result == 12)
   }
 
-  test("broadcast") {
+  test("simple graph with 1 source and 2 sinks") {
 
     val sink1: Sink[Int, Future[Int]] = Sink.fold[Int, Int](0)(_ + _)
-    val sink2: Sink[Int, Future[Int]] = Sink.fold[Int, Int](0)(_ * _)
+    val sink2: Sink[Int, Future[Int]] = Sink.fold[Int, Int](1)(_ * _)
 
-    val graph: RunnableFlow[Unit] = FlowGraph.closed() { implicit builder: FlowGraph.Builder[Unit] =>
-      import akka.stream.scaladsl.FlowGraph.Implicits._
+    val graph:RunnableFlow[(Future[Int],Future[Int])] = FlowGraph.closed(sink1, sink2)((_, _)) { implicit b =>
+      (s1, s2) =>
 
-      val bcast = builder.add(Broadcast[Int](2))
+        import akka.stream.scaladsl.FlowGraph.Implicits._
 
-      Source(1 to 3) ~> bcast.in
-      bcast.out(0) ~> Flow[Int].map(_ + 1) ~> sink1
-      bcast.out(1) ~> Flow[Int].map(_ * 2) ~> sink2
+        val bcast = b.add(Broadcast[Int](2))
+
+        Source(1 to 3) ~> bcast.in
+        bcast.out(0) ~> Flow[Int].map(_ + 1) ~> s1.inlet
+        bcast.out(1) ~> Flow[Int].map(_ * 2) ~> s2.inlet
     }
 
-    // graph.run()
+    val (r1, r2): (Future[Int], Future[Int]) = graph.run()
 
+    assert(9 == Await.result(r1, Duration.create(100, TimeUnit.MILLISECONDS)))
+    assert(48 == Await.result(r2, Duration.create(100, TimeUnit.MILLISECONDS)))
 
   }
+
+  /* */
+    test("car factory") {
+
+      trait Part {
+        def faulty: Boolean
+      }
+      case class Engine(faulty: Boolean) extends Part
+      case class Wheel(faulty: Boolean) extends Part
+      case class Coachwork(faulty: Boolean) extends Part
+
+      sealed abstract class Color
+      object Blue extends Color
+      object Green extends Color
+      object Red extends Color
+      object None extends Color
+
+      case class Car(engine: Engine,
+                     coachwork: Coachwork,
+                     wheels: Seq[Wheel],
+                     color: Color) {
+
+        if (wheels.length != 4) {
+          throw new RuntimeException(s"Wrong number of wheels: ${wheels.length}")
+        }
+      }
+
+      val engineSource = Source( () => Iterator.continually(Engine(false)))
+      val wheelSource = Source( () => Iterator.continually(Wheel(false)))
+      val coachworkSource = Source( () => Iterator.continually(Coachwork(false)))
+
+      def filterFor[T <: Part] = Flow[T].filter(!_.faulty)
+      def createPainter(color: Color) = Flow[Car].map(c => c.copy(color = color))
+      val bluePainter = createPainter(Blue)
+      val greenPainter = createPainter(Green)
+      val redPainter = createPainter(Red)
+
+      val sumSink = Sink.fold[Int, Car](0)((sum:Int,c:Car) => sum + 1)
+
+      val graph: RunnableFlow[Future[Int]] = FlowGraph.closed(sumSink) { implicit b: FlowGraph.Builder[Future[Int]] =>
+
+        s =>
+
+        val carAssembler = b.add(ZipWith[Engine, Coachwork, Seq[Wheel], Car] {
+          (e, c, w) => new Car(e, c, w, None)
+        })
+
+        val splitter = b.add(Balance[Car](3))
+
+        val merge = b.add(Merge[Car](3))
+
+        import akka.stream.scaladsl.FlowGraph.Implicits._
+
+        engineSource ~> filterFor[Engine] ~> carAssembler.in0
+        coachworkSource ~> filterFor[Coachwork] ~> carAssembler.in1
+        wheelSource ~> filterFor[Wheel].grouped(4) ~> carAssembler.in2
+
+        carAssembler.out ~> splitter.in
+
+        splitter.out(0) ~> bluePainter ~> merge
+        splitter.out(1) ~> redPainter ~> merge
+        splitter.out(2) ~> greenPainter ~> merge
+
+        merge.out.take(1000*1000) ~> s.inlet
+      }
+
+      val start = System.currentTimeMillis()
+      val fr: Future[Int] = graph.run()
+
+      val result: Int = Await.result(fr, Duration.create(10000, TimeUnit.MILLISECONDS))
+
+      val end = System.currentTimeMillis()
+
+      println(s"Duration: ${end-start}")
+
+      assert(result == 1000*1000)
+    }
+
 }
