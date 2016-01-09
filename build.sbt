@@ -10,17 +10,15 @@ javacOptions ++= Seq("-Xlint:deprecation", "-encoding", "utf8","-XX:MaxPermSize=
 
 libraryDependencies ++= {
   val akkaGroup = "com.typesafe.akka"
-  val akkaVersion = "2.3.10"
-  val akkaStreamVersion = "1.0-RC4"
+  val akkaVersion = "2.3.12"
+  val streamsVersion = "1.0"
   val scalaTestVersion = "2.2.4"
   Seq(
     akkaGroup %% "akka-actor" % akkaVersion,
-    akkaGroup %% "akka-stream-experimental" % akkaStreamVersion,
-    akkaGroup %% "akka-http-core-experimental" % akkaStreamVersion,
-    //akkaGroup %% "akka-http-experimental" % akkaStreamVersion,
-    akkaGroup %% "akka-http-scala-experimental" % akkaStreamVersion,
-    akkaGroup %% "akka-http-spray-json-experimental" % akkaStreamVersion,
-    akkaGroup %% "akka-http-testkit-scala-experimental" % akkaStreamVersion % "test",
+    "com.typesafe.akka" %% "akka-http-core-experimental" % streamsVersion,
+    "com.typesafe.akka" %% "akka-http-experimental" % streamsVersion,
+    "com.typesafe.akka" %% "akka-stream-experimental" % streamsVersion,
+    "com.typesafe.akka" %% "akka-http-spray-json-experimental" % streamsVersion,
     "org.scalatest" %% "scalatest" % scalaTestVersion % "test"
   )
 }
